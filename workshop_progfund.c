@@ -22,6 +22,8 @@ void display_menu() {
     printf("3. Search participation\n");
     printf("4. Update participation\n");
     printf("5. Delete participation\n");
+    printf("6. Run Unit Tests\n");
+    printf("7. Run End-to-End Test\n");
     printf("0. Exit\n");
     printf("==================================\n");
     printf("Select: ");
@@ -221,6 +223,39 @@ void delete_participation(Workshop list[], int *count) {
     printf("No participant found with name '%s'\n", name);
 }
 
+// unit test
+// not finished
+void unit_test() {
+    int choice;
+    printf("\n===== Unit Test Menu =====\n");
+    printf("1. Run Test 1\n");
+    printf("2. Run Test 2\n");
+    printf("Select: ");
+    scanf("%d", &choice);
+
+    switch (choice) {
+        case 1:
+            printf("Running Unit Test 1\n");
+            break;
+        case 2:
+            printf("Running Unit Test 2\n");
+            break;
+        default:
+            printf("Invalid choice!\n");
+    }
+
+    printf("Returning to main menu\n");
+}
+
+// E2E test
+// not finished
+void end_to_end_test() {
+    printf("\n===== End-to-End Test =====\n");
+    printf("Running End-to-End Test\n");
+    printf("Returning to main menu\n");
+}
+
+
 // main
 int main() {
     Workshop list[MAX];
@@ -238,9 +273,11 @@ int main() {
             case 3: search_participation(list, count); break;
             case 4: update_participation(list, count); break;
             case 5: delete_participation(list, &count); break;
-            case 0: printf("Exiting program\n"); break;
-            default: printf("Invalid choice, please select again\n");
-        }
+            case 6: unit_test(); break;
+            case 7: end_to_end_test(); break;
+            case 0: printf("Exiting program...\n"); break;
+            default: printf("Invalid choice!\n");
+        }        
     } while (choice != 0);
 
     return 0;
