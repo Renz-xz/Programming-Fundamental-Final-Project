@@ -1,6 +1,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <ctype.h>
 #define FILE_NAME "workshop.csv"
 #define MAX 100
 #define LINE_SIZE 256
@@ -13,7 +14,6 @@ typedef struct {
     char workshopDate[20];
     char duration[10];
 } Workshop;
-
 
 // menu
 void display_menu() {
@@ -362,22 +362,27 @@ void delete_participation(Workshop list[], int *count) {
     printf("Participant not found.\n");
 }
 
-// unit test
-// not finished
+// ประกาศ prototype ของ unit_test_1
+void run_unit_test_1(void);
+
 void unit_tests() {
     int choice;
     printf("\n===== Unit Test Menu =====\n");
-    printf("1. Run Test 1\n");
-    printf("2. Run Test 2\n");
+    printf("1. Run Test 1 (add_participation)\n");
+    printf("2. Run Test 2 (skip)\n");
     printf("Select: ");
-    scanf("%d", &choice);
+    if (scanf("%d", &choice) != 1) {
+        while (getchar() != '\n'); 
+        return;
+    }
+    while (getchar() != '\n');
 
     switch (choice) {
         case 1:
-            printf("Running Unit Test 1\n");
+            run_unit_test_1();  // ✅ เรียก Unit Test 1
             break;
         case 2:
-            printf("Running Unit Test 2\n");
+            printf("Skipping Unit Test 2. Returning to main menu.\n");
             break;
         default:
             printf("Invalid choice!\n");
@@ -385,6 +390,7 @@ void unit_tests() {
 
     printf("Returning to main menu\n");
 }
+
 
 // E2E test
 // not finished
