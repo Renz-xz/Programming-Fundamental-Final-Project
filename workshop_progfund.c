@@ -364,12 +364,14 @@ void delete_participation(Workshop list[], int *count) {
 
 // ประกาศ prototype ของ unit_test_1
 void run_unit_test_1(void);
+void run_unit_test_2(void);
 
 void unit_tests() {
     int choice;
     printf("\n===== Unit Test Menu =====\n");
     printf("1. Run Test 1 (add_participation)\n");
-    printf("2. Run Test 2 (skip)\n");
+    printf("2. Run Test 2 (update_participation)\n");
+    printf("3. Cancel\n");
     printf("Select: ");
     if (scanf("%d", &choice) != 1) {
         while (getchar() != '\n'); 
@@ -382,7 +384,10 @@ void unit_tests() {
             run_unit_test_1();  // ✅ เรียก Unit Test 1
             break;
         case 2:
-            printf("Skipping Unit Test 2. Returning to main menu.\n");
+            run_unit_test_2();  // ✅ เรียก Unit Test 2
+            break;
+        case 3:
+            printf("Unit test canceled\n");
             break;
         default:
             printf("Invalid choice!\n");

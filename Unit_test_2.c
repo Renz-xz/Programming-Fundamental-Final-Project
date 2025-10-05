@@ -18,7 +18,7 @@ typedef struct {
 // -------------------------
 // Prototype ของฟังก์ชันที่ทดสอบ
 // -------------------------
-void add_participation(Workshop list[], int *count);
+void update_participation(Workshop list[], int *count);
 
 // -------------------------
 // Helper: จำลอง stdin
@@ -41,46 +41,57 @@ static void reset_stdin() {
 // =====================
 // Test 1: Normal
 // =====================
-static void test_add_normal() {
+static void test_update_normal() {
     Workshop list[MAX];
-    int count = 0;
+    int count = 1;
+
+    // เตรียมข้อมูลเดิม
+    strcpy(list[0].firstName, "John");
+    strcpy(list[0].lastName, "Doe");
+    strcpy(list[0].workshopTitle, "Old Title");
+    strcpy(list[0].workshopDate, "2025/01/01");
+    strcpy(list[0].duration, "2");
+
     printf("======================[Test 1] Normal Case======================\n");
 
-    set_stdin_input("John\nDoe\nC Programming\n2025/10/01\n3\n");
-    add_participation(list, &count);
+    // input flow: [Full name] [เลือก update 1=Title] [ค่าใหม่]
+    set_stdin_input("John Doe\n1\nNew Workshop Title\n");
 
-    assert(count == 1);
-    assert(strcmp(list[0].firstName, "John") == 0);
-    assert(strcmp(list[0].lastName, "Doe") == 0);
-    assert(strcmp(list[0].workshopTitle, "C Programming") == 0);
-    assert(strcmp(list[0].workshopDate, "2025/10/01") == 0);
-    assert(strcmp(list[0].duration, "3") == 0);
+    update_participation(list, &count);
+
+    assert(strcmp(list[0].workshopTitle, "New Workshop Title") == 0);
 
     printf("======================Normal Case Passed======================\n");
     reset_stdin();
 }
 
+
 // =====================
 // Test 2: Boundary
 // =====================
-static void test_add_boundary() {
+static void test_update_boundary() {
     Workshop list[MAX];
-    int count = 0;
+    int count = 1;
+
+    strcpy(list[0].firstName, "Jane");
+    strcpy(list[0].lastName, "Smith");
+    strcpy(list[0].workshopTitle, "Boundary Test");
+    strcpy(list[0].workshopDate, "2025/01/01");
+    strcpy(list[0].duration, "5");
 
     printf("======================[Test 2] Boundary Case======================\n");
 
     // input flow: full name -> เลือก 2 (Date) -> ใส่ผิดก่อน -> ใส่ใหม่ถูก
     char input[200];
     snprintf(input, sizeof(input),
-        "Jane\nSmith\nBoundary_Test\n2025/13/32\n2025/12/31\n0\n11\n2\n"
+        "Jane Smith\n2\n2025/13/32\n2025/12/31\n"
     );
 
     set_stdin_input(input);
 
-    add_participation(list, &count);
+    update_participation(list, &count);
 
     assert(strcmp(list[0].workshopDate, "2025/12/31") == 0);
-    assert(strcmp(list[0].duration, "2") == 0);
 
     printf("======================Boundary Case Passed======================\n");
     reset_stdin();
@@ -90,31 +101,42 @@ static void test_add_boundary() {
 // =====================
 // Test 3: Exterme
 // =====================
-static void test_add_extreme() {
+static void test_update_extreme() {
     Workshop list[MAX];
-    int count = 0;
-    printf("======================[Test 1] Extreme Case======================\n");
+    int count = 1;
 
-    set_stdin_input("123John\nJohn\nSmith!\nSmith\nC Programming\nabcd/99999/99999\n\n2025/10/01\n99999\n-99999\n3\n");
-    add_participation(list, &count);
+    strcpy(list[0].firstName, "Bob");
+    strcpy(list[0].lastName, "Extreme");
+    strcpy(list[0].workshopTitle, "Extreme Old");
+    strcpy(list[0].workshopDate, "2025/01/01");
+    strcpy(list[0].duration, "3");
 
-    assert(count == 1);
-    assert(strcmp(list[0].firstName, "John") == 0);
-    assert(strcmp(list[0].lastName, "Smith") == 0);
-    assert(strcmp(list[0].workshopTitle, "C Programming") == 0);
-    assert(strcmp(list[0].workshopDate, "2025/10/01") == 0);
-    assert(strcmp(list[0].duration, "3") == 0);
+    printf("======================[Test 3] Extreme Case======================\n");
+
+    // input flow: full name -> เลือก 3 (Duration) -> ใส่ 0 -> -5 -> valid
+    char input[200];
+    snprintf(input, sizeof(input),
+        "Bob Extreme\n3\n999999\n-999999\n10\n"
+    );
+
+    set_stdin_input(input);
+
+    update_participation(list, &count);
+
+    assert(strcmp(list[0].duration, "10") == 0);
 
     printf("======================Extreme Case Passed======================\n");
     reset_stdin();
 }
 
+
+
 // =====================
 // Test 4: Memory Leak (Valgrind)
 // =====================
-static void test_add_memory_leak() {
+static void test_update_memory_leak() {
     Workshop list[MAX];
-    int count = 0;
+    int count = 1;
 
     strcpy(list[0].firstName, "Leak");
     strcpy(list[0].lastName, "Test");
@@ -124,15 +146,10 @@ static void test_add_memory_leak() {
 
     printf("======================[Test 4] Memory Leak======================\n");
 
-    set_stdin_input(
-        "Leak\n"
-        "Test\n"
-        "New Leak Title\n"
-        "2025/10/05\n"
-        "2\n"              
-    );
+    // เปลี่ยน title
+    set_stdin_input("Leak Test\n1\nNew Leak Title\n");
 
-    add_participation(list, &count);
+    update_participation(list, &count);
 
     printf("======================Memory Leak Test Passed (Check with Valgrind)======================\n");
     reset_stdin();
@@ -142,11 +159,11 @@ static void test_add_memory_leak() {
 // =====================
 // ฟังก์ชันเรียกทั้งหมด (เรียกจาก unit_tests())
 // =====================
-void run_unit_test_1(void) {
-    printf("\n=========== Running Unit Test 1 (add_participation) ===========\n");
-    test_add_normal();
-    test_add_boundary();
-    test_add_extreme();
-    test_add_memory_leak();
-    printf("======================Unit Test 1 completed.======================\n\n");
+void run_unit_test_2(void) {
+    printf("\n=========== Running Unit Test 2 (update_participation) ===========\n");
+    test_update_normal();
+    test_update_boundary();
+    test_update_extreme();
+    test_update_memory_leak();
+    printf("======================Unit Test 2 completed.======================\n\n");
 }
