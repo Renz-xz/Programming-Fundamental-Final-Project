@@ -82,7 +82,6 @@ void run_e2e_tests() {
 
         Workshop list[MAX];
         int count = 0;
-        save_to_file(list, count); // เคลียร์ไฟล์ก่อน
 
         // เปิด test mode เพื่อไม่ให้ save ไฟล์จริง
         is_test_mode = 1;
@@ -116,7 +115,7 @@ void run_e2e_tests() {
 
         Workshop list[MAX];
         int count = 0;
-        save_to_file(list, count);
+
         // เปิด test mode เพื่อไม่ให้ save ไฟล์จริง
         is_test_mode = 1;
 
@@ -156,7 +155,7 @@ void run_e2e_tests() {
 
         Workshop list[MAX];
         int count = 0;
-        save_to_file(list, count);
+
         // เปิด test mode เพื่อไม่ให้ save ไฟล์จริง
         is_test_mode = 1;
 

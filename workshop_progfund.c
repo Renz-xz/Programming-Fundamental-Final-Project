@@ -17,7 +17,7 @@ typedef struct {
     char duration[10];
 } Workshop;
 
-int is_test_mode = 0; // 0 = normal, 1 = E2E/Unit Test
+int is_test_mode = 0;
 
 // menu
 void display_menu() {
@@ -59,24 +59,27 @@ int load_from_file(Workshop list[], int *count) {
 
 // save
 void save_to_file(Workshop list[], int count) {
-    if (is_test_mode) return;  // ไม่เซฟไฟล์จริง
-
-    FILE *fp = fopen("workshop.csv", "w");
-    if (!fp) {
-        printf("Cannot open file for writing.\n");
-        return;
+    if (is_test_mode==0) {
+        return;  // ไม่เซฟไฟล์จริง
     }
 
-    for (int i = 0; i < count; i++) {
-        fprintf(fp, "%s,%s,%s,%s\n",
-                list[i].firstName,
-                list[i].lastName,
-                list[i].workshopTitle,
-                list[i].workshopDate,
-                list[i].duration);
+    else {
+        remove(FILE_NAME);FILE *fp = fopen("workshop.csv", "w");
+        if (!fp) {
+            printf("Cannot open file for writing.\n");
+            return;
+        }
+    
+        for (int i = 0; i < count; i++) {
+            fprintf(fp, "%s,%s,%s,%s\n",
+                    list[i].firstName,
+                    list[i].lastName,
+                    list[i].workshopTitle,
+                    list[i].workshopDate,
+                    list[i].duration);
+        }
+        fclose(fp);
     }
-
-    fclose(fp);
 }
 
 // validate name
