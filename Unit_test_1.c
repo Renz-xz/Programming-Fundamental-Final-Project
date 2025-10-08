@@ -1,6 +1,8 @@
+#define _CRTDBG_MAP_ALLOC
+#include <stdlib.h>
+#include <crtdbg.h>
 #include <stdio.h>
 #include <string.h>
-#include <stdlib.h>
 #include <assert.h>
 
 // -------------------------
@@ -110,9 +112,10 @@ static void test_add_extreme() {
 }
 
 // =====================
-// Test 4: Memory Leak (Valgrind)
+// Test 4: Memory Leak (CRT Debug Heap)
 // =====================
 static void test_add_memory_leak() {
+    _CrtSetDbgFlag(_CRTDBG_ALLOC_MEM_DF | _CRTDBG_LEAK_CHECK_DF);
     Workshop list[MAX];
     int count = 0;
 
@@ -134,7 +137,7 @@ static void test_add_memory_leak() {
 
     add_participation(list, &count);
 
-    printf("======================Memory Leak Test Passed (Check with Valgrind)======================\n");
+    printf("======================Memory Leak Test Passed (Check with CRT Debug Heap)======================\n");
     reset_stdin();
 }
 

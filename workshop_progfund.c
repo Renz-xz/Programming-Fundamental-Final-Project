@@ -1,7 +1,9 @@
 #include <stdio.h>
 #include <stdlib.h>
+#include <crtdbg.h>
 #include <string.h>
 #include <ctype.h>
+#define _CRTDBG_MAP_ALLOC
 #define FILE_NAME "workshop.csv"
 #define MAX 100
 #define LINE_SIZE 256
@@ -14,6 +16,8 @@ typedef struct {
     char workshopDate[20];
     char duration[10];
 } Workshop;
+
+int is_test_mode = 0; // 0 = normal, 1 = E2E/Unit Test
 
 // menu
 void display_menu() {
@@ -55,19 +59,23 @@ int load_from_file(Workshop list[], int *count) {
 
 // save
 void save_to_file(Workshop list[], int count) {
-    FILE *fp = fopen(FILE_NAME, "w");
+    if (is_test_mode) return;  // ไม่เซฟไฟล์จริง
+
+    FILE *fp = fopen("workshop.csv", "w");
     if (!fp) {
-        printf("Error saving file!\n");
+        printf("Cannot open file for writing.\n");
         return;
     }
+
     for (int i = 0; i < count; i++) {
-        fprintf(fp, "%s,%s,%s,%s,%s\n",
+        fprintf(fp, "%s,%s,%s,%s\n",
                 list[i].firstName,
                 list[i].lastName,
                 list[i].workshopTitle,
                 list[i].workshopDate,
                 list[i].duration);
     }
+
     fclose(fp);
 }
 
@@ -362,9 +370,10 @@ void delete_participation(Workshop list[], int *count) {
     printf("Participant not found.\n");
 }
 
-// ประกาศ prototype ของ unit_test_1
+// ประกาศ prototype
 void run_unit_test_1(void);
 void run_unit_test_2(void);
+void run_e2e_tests(void);
 
 void unit_tests() {
     int choice;
@@ -381,10 +390,10 @@ void unit_tests() {
 
     switch (choice) {
         case 1:
-            run_unit_test_1();  // ✅ เรียก Unit Test 1
+            run_unit_test_1();  // เรียก Unit Test 1
             break;
         case 2:
-            run_unit_test_2();  // ✅ เรียก Unit Test 2
+            run_unit_test_2();  // เรียก Unit Test 2
             break;
         case 3:
             printf("Unit test canceled\n");
@@ -401,7 +410,7 @@ void unit_tests() {
 // not finished
 void e2e_tests() {
     printf("\n===== End-to-End Test =====\n");
-    printf("Running End-to-End Test\n");
+    run_e2e_tests();  // เรียก E2E Test
     printf("Returning to main menu\n");
 }
 
@@ -415,6 +424,7 @@ int main() {
     load_from_file(list, &count);
 
     while (1) {
+        is_test_mode = 0;
         display_menu();
         printf("Select: ");
 
