@@ -4,11 +4,8 @@
 #include <stdio.h>
 #include <string.h>
 #include <assert.h>
-
-// -------------------------
-// struct + MAX (เหมือนไฟล์หลัก)
-// -------------------------
 #define MAX 100
+
 typedef struct {
     char firstName[30];
     char lastName[30];
@@ -17,14 +14,9 @@ typedef struct {
     char duration[10];
 } Workshop;
 
-// -------------------------
-// Prototype ของฟังก์ชันที่ทดสอบ
-// -------------------------
+// Prototype
 void add_participation(Workshop list[], int *count);
 
-// -------------------------
-// Helper: จำลอง stdin
-// -------------------------
 static void set_stdin_input(const char *input) {
     FILE *f = fopen("test_input.txt", "w");
     fputs(input, f);
@@ -34,7 +26,7 @@ static void set_stdin_input(const char *input) {
 
 static void reset_stdin() {
 #ifdef _WIN32
-    freopen("CON", "r", stdin); // สำหรับ Windows
+    freopen("CON", "r", stdin);
 #else
     freopen("/dev/tty", "r", stdin);
 #endif
@@ -71,7 +63,6 @@ static void test_add_boundary() {
 
     printf("======================[Test 2] Boundary Case======================\n");
 
-    // input flow: full name -> เลือก 2 (Date) -> ใส่ผิดก่อน -> ใส่ใหม่ถูก
     char input[200];
     snprintf(input, sizeof(input),
         "Jane\nSmith\nBoundary_Test\n2025/13/32\n2025/12/31\n0\n11\n2\n"
@@ -141,10 +132,6 @@ static void test_add_memory_leak() {
     reset_stdin();
 }
 
-
-// =====================
-// ฟังก์ชันเรียกทั้งหมด (เรียกจาก unit_tests())
-// =====================
 void run_unit_test_1(void) {
     printf("\n=========== Running Unit Test 1 (add_participation) ===========\n");
     test_add_normal();

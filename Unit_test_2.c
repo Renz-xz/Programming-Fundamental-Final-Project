@@ -4,10 +4,6 @@
 #include <stdio.h>
 #include <string.h>
 #include <assert.h>
-
-// -------------------------
-// struct + MAX (เหมือนไฟล์หลัก)
-// -------------------------
 #define MAX 100
 typedef struct {
     char firstName[30];
@@ -17,14 +13,9 @@ typedef struct {
     char duration[10];
 } Workshop;
 
-// -------------------------
-// Prototype ของฟังก์ชันที่ทดสอบ
-// -------------------------
+// Prototype
 void update_participation(Workshop list[], int *count);
 
-// -------------------------
-// Helper: จำลอง stdin
-// -------------------------
 static void set_stdin_input(const char *input) {
     FILE *f = fopen("test_input.txt", "w");
     fputs(input, f);
@@ -34,7 +25,7 @@ static void set_stdin_input(const char *input) {
 
 static void reset_stdin() {
 #ifdef _WIN32
-    freopen("CON", "r", stdin); // สำหรับ Windows
+    freopen("CON", "r", stdin);
 #else
     freopen("/dev/tty", "r", stdin);
 #endif
@@ -47,7 +38,6 @@ static void test_update_normal() {
     Workshop list[MAX];
     int count = 1;
 
-    // เตรียมข้อมูลเดิม
     strcpy(list[0].firstName, "John");
     strcpy(list[0].lastName, "Doe");
     strcpy(list[0].workshopTitle, "Old Title");
@@ -56,7 +46,6 @@ static void test_update_normal() {
 
     printf("======================[Test 1] Normal Case======================\n");
 
-    // input flow: [Full name] [เลือก update 1=Title] [ค่าใหม่]
     set_stdin_input("John Doe\n1\nNew Workshop Title\n");
 
     update_participation(list, &count);
@@ -83,7 +72,6 @@ static void test_update_boundary() {
 
     printf("======================[Test 2] Boundary Case======================\n");
 
-    // input flow: full name -> เลือก 2 (Date) -> ใส่ผิดก่อน -> ใส่ใหม่ถูก
     char input[200];
     snprintf(input, sizeof(input),
         "Jane Smith\n2\n2025/13/32\n2025/12/31\n"
@@ -115,7 +103,6 @@ static void test_update_extreme() {
 
     printf("======================[Test 3] Extreme Case======================\n");
 
-    // input flow: full name -> เลือก 3 (Duration) -> ใส่ 0 -> -5 -> valid
     char input[200];
     snprintf(input, sizeof(input),
         "Bob Extreme\n3\n999999\n-999999\n10\n"
@@ -149,7 +136,6 @@ static void test_update_memory_leak() {
 
     printf("======================[Test 4] Memory Leak======================\n");
 
-    // เปลี่ยน title
     set_stdin_input("Leak Test\n1\nNew Leak Title\n");
 
     update_participation(list, &count);
@@ -158,10 +144,6 @@ static void test_update_memory_leak() {
     reset_stdin();
 }
 
-
-// =====================
-// ฟังก์ชันเรียกทั้งหมด (เรียกจาก unit_tests())
-// =====================
 void run_unit_test_2(void) {
     printf("\n=========== Running Unit Test 2 (update_participation) ===========\n");
     test_update_normal();

@@ -3,6 +3,7 @@
 #include <crtdbg.h>
 #include <string.h>
 #include <ctype.h>
+#include <windows.h>
 #define _CRTDBG_MAP_ALLOC
 #define FILE_NAME "workshop.csv"
 #define MAX 100
@@ -17,6 +18,7 @@ typedef struct {
     char duration[10];
 } Workshop;
 
+// global
 int is_test_mode = 0;
 
 // menu
@@ -26,7 +28,7 @@ void display_menu() {
     printf("2. Add participation\n");
     printf("3. Search participation\n");
     printf("4. Update participation\n");
-    printf("5. Delete participation\n");
+    printf("5. Permanent Delete participation\n");
     printf("6. Run Unit Tests\n");
     printf("7. Run End-to-End Test\n");
     printf("0. Exit\n");
@@ -59,27 +61,27 @@ int load_from_file(Workshop list[], int *count) {
 
 // save
 void save_to_file(Workshop list[], int count) {
-    if (is_test_mode==0) {
-        return;  // ไม่เซฟไฟล์จริง
+    if (is_test_mode) {
+        // E2E/Unit Test Mode → ไม่เซฟไฟล์จริง
+        return;
     }
 
-    else {
-        remove(FILE_NAME);FILE *fp = fopen("workshop.csv", "w");
-        if (!fp) {
-            printf("Cannot open file for writing.\n");
-            return;
-        }
-    
-        for (int i = 0; i < count; i++) {
-            fprintf(fp, "%s,%s,%s,%s\n",
-                    list[i].firstName,
-                    list[i].lastName,
-                    list[i].workshopTitle,
-                    list[i].workshopDate,
-                    list[i].duration);
-        }
-        fclose(fp);
+    // ✅ โหมดปกติ → เซฟไฟล์
+    FILE *fp = fopen(FILE_NAME, "w");
+    if (!fp) {
+        printf("Cannot open file for writing.\n");
+        return;
     }
+
+    for (int i = 0; i < count; i++) {
+        fprintf(fp, "%s,%s,%s,%s,%s\n",
+                list[i].firstName,
+                list[i].lastName,
+                list[i].workshopTitle,
+                list[i].workshopDate,
+                list[i].duration);
+    }
+    fclose(fp);
 }
 
 // validate name
@@ -262,123 +264,226 @@ void update_participation(Workshop list[], int count) {
         printf("No data to update.\n");
         return;
     }
+
     char searchName[61];
     printf("Enter participant full name to update: ");
     scanf(" %[^\n]", searchName);
+
+    int matchedIndexes[MAX];
+    int matchedCount = 0;
+
     for (int i = 0; i < count; i++) {
         char fullName[61];
         snprintf(fullName, sizeof(fullName), "%s %s", list[i].firstName, list[i].lastName);
         if (strcmp(fullName, searchName) == 0) {
-            int choice;
-            printf("What do you want to update?\n");
-            printf("1. Workshop Title\n");
-            printf("2. Date\n");
-            printf("3. Duration\n");
-            printf("4. Cancel\n");
-            printf("Enter choice: ");
-            if (scanf("%d", &choice) != 1) {
-                printf("Invalid input.\n");
-                while (getchar() != '\n');
-                return;
-            }
-            getchar();
-            switch (choice) {
-                case 1:
-                    printf("Enter new Workshop Title: ");
-                    scanf(" %[^\n]", list[i].workshopTitle);
-                    break;
-                case 2: {
-                    char date[20];
-                    int day, month, year;
-                    while (1) {
-                        printf("Enter new Date (yyyy/mm/dd): ");
-                        scanf("%19s", date);
-                        if (sscanf(date, "%d/%d/%d", &year, &month, &day) == 3 &&
-                            day >= 1 && day <= 31 &&
-                            month >= 1 && month <= 12 &&
-                            year == 2025) {
-                            strcpy(list[i].workshopDate, date);
-                            break;
-                        } else {
-                            printf("Invalid date format or values. Try again.\n");
-                        }
-                    }
-                    break;
-                }
-                case 3: {
-                    int duration;
-                    while (1) {
-                        printf("Enter new Duration (in hours): ");
-                        if (scanf("%d", &duration) != 1) {
-                            printf("Invalid input. Please enter a number.\n");
-                            while (getchar() != '\n');
-                            continue;
-                        }
-                        if (duration <= 0 || duration > 10) {
-                            printf("Duration must between 1 to 10.\n");
-                        } else {
-                            sprintf(list[i].duration, "%d", duration);
-                            break;
-                        }
-                    }
-                    break;
-                }
-                case 4:
-                    printf("Update cancelled.\n");
-                    return;
-                default:
-                    printf("Invalid choice.\n");
-                    return;
-            }
-            printf("Participant updated successfully!\n");
-            return;
+            matchedIndexes[matchedCount++] = i;
         }
     }
-    printf("Participant not found.\n");
+
+    if (matchedCount == 0) {
+        printf("Participant not found.\n");
+        return;
+    }
+
+    int targetIndex;
+    if (matchedCount == 1) {
+        targetIndex = matchedIndexes[0];
+    } else {
+        printf("Multiple participants found with the same name:\n");
+        for (int i = 0; i < matchedCount; i++) {
+            int idx = matchedIndexes[i];
+            printf("%d. %s %s | Title: %s | Date: %s | Duration: %s hrs\n",
+                   i + 1,
+                   list[idx].firstName,
+                   list[idx].lastName,
+                   list[idx].workshopTitle,
+                   list[idx].workshopDate,
+                   list[idx].duration);
+        }
+
+        int choice;
+        while (1) {
+            printf("Select the number of the participant to update (1-%d): ", matchedCount);
+            if (scanf("%d", &choice) != 1) {
+                printf("Invalid input. Please enter a number.\n");
+                while (getchar() != '\n');
+                continue;
+            }
+            if (choice < 1 || choice > matchedCount) {
+                printf("Invalid choice. Try again.\n");
+            } else {
+                targetIndex = matchedIndexes[choice - 1];
+                break;
+            }
+        }
+    }
+
+    int updateChoice;
+    printf("What do you want to update?\n");
+    printf("1. Workshop Title\n");
+    printf("2. Date\n");
+    printf("3. Duration\n");
+    printf("4. Cancel\n");
+    printf("Enter choice: ");
+
+    if (scanf("%d", &updateChoice) != 1) {
+        printf("Invalid input.\n");
+        while (getchar() != '\n');
+        return;
+    }
+    getchar();
+
+    switch (updateChoice) {
+        case 1: {
+            printf("Enter new Workshop Title: ");
+            scanf(" %[^\n]", list[targetIndex].workshopTitle);
+            printf("Workshop Title updated successfully!\n");
+            break;
+        }
+        case 2: {
+            char date[20];
+            int day, month, year;
+            while (1) {
+                printf("Enter new Date (yyyy/mm/dd): ");
+                scanf("%19s", date);
+                if (sscanf(date, "%d/%d/%d", &year, &month, &day) == 3 &&
+                    day >= 1 && day <= 31 &&
+                    month >= 1 && month <= 12 &&
+                    year == 2025) {
+                    strcpy(list[targetIndex].workshopDate, date);
+                    printf("Date updated successfully!\n");
+                    break;
+                } else {
+                    printf("Invalid date format or values. Try again.\n");
+                }
+            }
+            break;
+        }
+        case 3: {
+            int duration;
+            while (1) {
+                printf("Enter new Duration (in hours): ");
+                if (scanf("%d", &duration) != 1) {
+                    printf("Invalid input. Please enter a number.\n");
+                    while (getchar() != '\n');
+                    continue;
+                }
+                if (duration <= 0 || duration > 10) {
+                    printf("Duration must be between 1 to 10.\n");
+                } else {
+                    sprintf(list[targetIndex].duration, "%d", duration);
+                    printf("Duration updated successfully!\n");
+                    break;
+                }
+            }
+            break;
+        }
+        case 4:
+            printf("Update cancelled.\n");
+            return;
+        default:
+            printf("Invalid choice.\n");
+            return;
+    }
 }
 
 // delete
 void delete_participation(Workshop list[], int *count) {
     if (*count == 0) {
-        printf("No data to delete.\n");
+        printf("No participation records to delete.\n");
         return;
     }
 
-    char searchName[61];
-    printf("Enter full name to delete: ");
-    scanf(" %[^\n]", searchName);
+    char firstName[50], lastName[50];
+    printf("Enter first name to delete: ");
+    fgets(firstName, sizeof(firstName), stdin);
+    firstName[strcspn(firstName, "\n")] = 0;
 
+    printf("Enter last name to delete: ");
+    fgets(lastName, sizeof(lastName), stdin);
+    lastName[strcspn(lastName, "\n")] = 0;
+
+    int matches[50];
+    int match_count = 0;
     for (int i = 0; i < *count; i++) {
-        char fullName[61];
-        snprintf(fullName, sizeof(fullName), "%s %s", list[i].firstName, list[i].lastName);
-
-        if (strcmp(fullName, searchName) == 0) {
-            char confirm;
-            printf("Are you sure you want to delete \"%s\"? (y/n): ", fullName);
-            scanf(" %c", &confirm);
-
-            if (confirm == 'y' || confirm == 'Y') {
-                for (int j = i; j < *count - 1; j++) {
-                    list[j] = list[j + 1];
-                }
-                (*count)--;
-                printf("Participant deleted successfully!\n");
-            } else {
-                printf("Delete canceled.\n");
-            }
-            return;
+        if (strcmp(list[i].firstName, firstName) == 0 &&
+            strcmp(list[i].lastName, lastName) == 0) {
+            matches[match_count++] = i;
         }
     }
 
-    printf("Participant not found.\n");
+    if (match_count == 0) {
+        printf("No participation found for %s %s.\n", firstName, lastName);
+        return;
+    }
+
+    int target_index = -1;
+    if (match_count == 1) {
+        target_index = matches[0];
+    } else {
+        printf("Multiple participations found for %s %s:\n", firstName, lastName);
+        for (int i = 0; i < match_count; i++) {
+            int idx = matches[i];
+            printf("%d. %s %s - Title: %s | Date: %s | Duration: %s\n",
+                   i + 1,
+                   list[idx].firstName,
+                   list[idx].lastName,
+                   list[idx].workshopTitle,
+                   list[idx].workshopDate,
+                   list[idx].duration);
+        }
+
+        int choice = 0;
+        while (1) {
+            printf("Select which one to delete (1-%d): ", match_count);
+            if (scanf("%d", &choice) != 1 || choice < 1 || choice > match_count) {
+                printf("Invalid choice. Try again.\n");
+                while (getchar() != '\n');
+            } else {
+                while (getchar() != '\n');
+                target_index = matches[choice - 1];
+                break;
+            }
+        }
+    }
+
+    // Show confirmation
+    printf("\nYou are about to permanent delete:\n");
+    printf("%s %s - Title: %s | Date: %s | Duration: %s\n",
+           list[target_index].firstName,
+           list[target_index].lastName,
+           list[target_index].workshopTitle,
+           list[target_index].workshopDate,
+           list[target_index].duration);
+
+    char confirm;
+    printf("Are you sure you want to permanent delete this participation? (y/n): ");
+    scanf(" %c", &confirm);
+    while (getchar() != '\n');
+
+    if (confirm != 'y' && confirm != 'Y') {
+        printf("Deletion cancelled.\n");
+        return;
+    }
+
+    for (int i = target_index; i < *count - 1; i++) {
+        list[i] = list[i + 1];
+    }
+    (*count)--;
+
+    printf("Participation for %s %s deleted successfully.\n", firstName, lastName);
 }
 
-// ประกาศ prototype
+
+
+// prototype for unit test and e2e test
 void run_unit_test_1(void);
 void run_unit_test_2(void);
 void run_e2e_tests(void);
 
+// unit test
 void unit_tests() {
+    is_test_mode = 0;
     int choice;
     printf("\n===== Unit Test Menu =====\n");
     printf("1. Run Test 1 (add_participation)\n");
@@ -393,10 +498,10 @@ void unit_tests() {
 
     switch (choice) {
         case 1:
-            run_unit_test_1();  // เรียก Unit Test 1
+            run_unit_test_1(); 
             break;
         case 2:
-            run_unit_test_2();  // เรียก Unit Test 2
+            run_unit_test_2();
             break;
         case 3:
             printf("Unit test canceled\n");
@@ -410,10 +515,10 @@ void unit_tests() {
 
 
 // E2E test
-// not finished
 void e2e_tests() {
+    is_test_mode = 0;
     printf("\n===== End-to-End Test =====\n");
-    run_e2e_tests();  // เรียก E2E Test
+    run_e2e_tests();
     printf("Returning to main menu\n");
 }
 
@@ -423,11 +528,9 @@ int main() {
     Workshop list[MAX];
     int count = 0;
     int choice;
-
     load_from_file(list, &count);
 
     while (1) {
-        is_test_mode = 0;
         display_menu();
         printf("Select: ");
 

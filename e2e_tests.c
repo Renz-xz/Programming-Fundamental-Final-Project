@@ -4,8 +4,6 @@
 #include <crtdbg.h>
 #include <string.h>
 #include <assert.h>
-
-// ============ ประกาศฟังก์ชัน/ตัวแปรจากโปรแกรมหลัก ============
 #define MAX 100
 
 typedef struct {
@@ -18,7 +16,7 @@ typedef struct {
 
 extern int is_test_mode;
 
-// โปรโตไทป์ของฟังก์ชันหลัก (ไม่มี header)
+// Prototype
 void save_to_file(Workshop list[], int count);
 void load_from_file(Workshop list[], int *count);
 void add_participation(Workshop list[], int *count);
@@ -27,9 +25,8 @@ void update_participation(Workshop list[], int *count);
 void delete_participation(Workshop list[], int *count);
 void view_participations(Workshop list[], int count);
 void display_menu();
-int main(); // เรียก main จริง
+int main();
 
-// ============ Helper จำลอง stdin (ใช้ freopen) ============
 static void set_stdin_input(const char *input) {
     FILE *f = fopen("e2e_input.txt", "w");
     if (!f) {
@@ -44,14 +41,15 @@ static void set_stdin_input(const char *input) {
 
 static void reset_stdin() {
 #ifdef _WIN32
-    freopen("CON", "r", stdin); // Windows
+    freopen("CON", "r", stdin);
 #else
-    freopen("/dev/tty", "r", stdin); // Linux
+    freopen("/dev/tty", "r", stdin);
 #endif
 }
 
-// ============ E2E TESTS ============
+// E2E Test Cases
 void run_e2e_tests() {
+    is_test_mode = 0;
     printf("\n======================[E2E TESTS START]======================\n");
 
     // -----------------------------------------------------------------
@@ -72,7 +70,7 @@ void run_e2e_tests() {
             "John Doe\n"
             "4\n"                     // Update
             "John\nDoe\n"
-            "1\n"                     // เปลี่ยน Title
+            "1\n"                     // Title
             "Updated Title\n"
             "5\n"                     // Delete
             "John Doe\n"
@@ -83,12 +81,8 @@ void run_e2e_tests() {
         Workshop list[MAX];
         int count = 0;
 
-        // เปิด test mode เพื่อไม่ให้ save ไฟล์จริง
         is_test_mode = 1;
-
         main();
-
-        // ปิด test mode
         is_test_mode = 0;
 
         reset_stdin();
@@ -106,9 +100,9 @@ void run_e2e_tests() {
             "Jane\n"
             "Smith\n"
             "Boundary Test\n"
-            "2025/13/40\n"     // ✖ ใส่ผิด
-            "2025/12/31\n"     // ✔ ใส่ใหม่ถูก
-            "11\n"             // ✖ ใส่ผิด
+            "2025/13/40\n"     
+            "2025/12/31\n"     
+            "11\n"             
             "2\n"
             "0\n"
         );
@@ -116,13 +110,11 @@ void run_e2e_tests() {
         Workshop list[MAX];
         int count = 0;
 
-        // เปิด test mode เพื่อไม่ให้ save ไฟล์จริง
-        is_test_mode = 1;
-
+        is_test_mode = 1; 
         main();
+        is_test_mode = 0;  
 
-        // ปิด test mode
-        is_test_mode = 0;
+
         reset_stdin();
         printf("[E2E - Case 2]  Passed\n\n");
     }
@@ -145,8 +137,8 @@ void run_e2e_tests() {
             "ExtremeTitle\n"
             "9999/12/31\n"    // extreme date
             "2025/10/05\n"    // correct date
-            "9999\n"           // extreme duration
-            "10\n"             // correct duration
+            "9999\n"          // extreme duration
+            "10\n"            // correct duration
             "0\n",
             longName, longName
         );
@@ -156,13 +148,11 @@ void run_e2e_tests() {
         Workshop list[MAX];
         int count = 0;
 
-        // เปิด test mode เพื่อไม่ให้ save ไฟล์จริง
-        is_test_mode = 1;
-
+        is_test_mode = 1; 
         main();
+        is_test_mode = 0; 
 
-        // ปิด test mode
-        is_test_mode = 0;
+
         reset_stdin();
         printf("[E2E - Case 3]  Passed\n\n");
     }
@@ -192,13 +182,9 @@ void run_e2e_tests() {
         Workshop list[MAX];
         int count = 0;
 
-        // เปิด test mode เพื่อไม่ให้ save ไฟล์จริง
-        is_test_mode = 1;
-
+        is_test_mode = 1; 
         main();
-
-        // ปิด test mode
-        is_test_mode = 0;
+        is_test_mode = 0; 
 
         reset_stdin();
         printf("[E2E - Case 4]  Passed (Check with CRT Debug Heap)\n\n");
