@@ -259,7 +259,7 @@ void search_participation(Workshop list[], int count) {
 }
 
 // update
-void update_participation(Workshop list[], int count) {
+void update_participation(Workshop list[], int *count) {
     if (count == 0) {
         printf("No data to update.\n");
         return;
@@ -272,7 +272,7 @@ void update_participation(Workshop list[], int count) {
     int matchedIndexes[MAX];
     int matchedCount = 0;
 
-    for (int i = 0; i < count; i++) {
+    for (int i = 0; i < *count; i++) {
         char fullName[61];
         snprintf(fullName, sizeof(fullName), "%s %s", list[i].firstName, list[i].lastName);
         if (strcmp(fullName, searchName) == 0) {
@@ -554,7 +554,7 @@ int main() {
                 search_participation(list, count);
                 break;
             case 4:
-                update_participation(list, count);
+                update_participation(list, &count);
                 save_to_file(list, count);
                 break;
             case 5:

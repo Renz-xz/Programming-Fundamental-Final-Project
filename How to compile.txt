@@ -1,0 +1,2 @@
+Compile command : gcc workshop_progfund.c unit_test_1.c unit_test_2.c e2e_tests.c -o workshop_progfund
+Run Program command : .\workshop_progfund
